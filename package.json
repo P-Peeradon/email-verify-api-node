@@ -4,8 +4,8 @@
   "module": "server.ts",
   "type": "module",
   "scripts": {
-    "dev": "nodemon -r ./server.ts",
-    "debug": "bun --inspect=5050 -r ts-node/register server.ts",
+    "dev": "nodemon --exec ts-node ./server.ts",
+    "debug": "bun --inspect=5050 -r ts-node/register ./server.ts",
     "build": "tsc --outDir ./dist"
   },
   "private": true,
