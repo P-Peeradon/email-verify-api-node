@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 4. Connect to SMTP Host and evaluate inbox.
 */
 
-app.get("/", async (req: Request, res: Response, next: NextFunction) => {
+app.post("/", async (req: Request, res: Response, next: NextFunction) => {
     if (!req.body?.email) {
         res.status(400).json({ error: "Missing email." });
         return next();
