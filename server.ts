@@ -1,6 +1,7 @@
 import express,  { type Request, type Response, type NextFunction } from "express";
 import bodyParser from "body-parser";
 import { verifyEmailFormat } from "./service/verifyEmailFormat.service";
+import { resolveRecord } from "./service/resolveRecord.service";
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -13,7 +14,7 @@ app.use(bodyParser.json());
 4. Connect to SMTP Host and evaluate inbox.
 */
 
-app.get("/", (req: Request, res: Response, next: NextFunction) => {
+app.get("/", async (req: Request, res: Response, next: NextFunction) => {
     if (!req.body?.email) {
         res.status(400).json({ error: "Missing email." });
         return next();
@@ -27,7 +28,12 @@ app.get("/", (req: Request, res: Response, next: NextFunction) => {
         return next();
     }
 
-    res.send({ hello: "world" });
+    const emailDomain = email.split("@")[1];
+    const mxRecords = await resolveRecord(emailDomain);
+    const sortedMxRecords = mxRecords.sort((a, b) => a.priority - b.priority);
+    console.log(sortedMxRecords);
+
+    res.send({ isvalidEmailFormat, sortedMxRecords });
     next();
 });
 
