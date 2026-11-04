@@ -4,7 +4,7 @@
   "module": "server.ts",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec ts-node ./server.ts",
+    "dev": "nodemon --exec tsx ./server.ts",
     "debug": "bun --inspect=5050 -r ts-node/register ./server.ts",
     "build": "tsc --outDir ./dist"
   },
@@ -14,7 +14,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
     "nodemon": "^3.1.14",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
   "dependencies": {
