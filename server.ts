@@ -1,5 +1,6 @@
 import express,  { type Request, type Response, type NextFunction } from "express";
 import bodyParser from "body-parser";
+import { verifyEmailFormat } from "./service/verifyEmailFormat.service";
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -9,7 +10,7 @@ app.use(bodyParser.json());
 1. Accept email address
 2. Validate the format
 3. Resolve the MX record for the domain name
-4. Connect to SMTP and evaluate inbox.
+4. Connect to SMTP Host and evaluate inbox.
 */
 
 app.get("/", (req: Request, res: Response, next: NextFunction) => {
@@ -19,7 +20,13 @@ app.get("/", (req: Request, res: Response, next: NextFunction) => {
     }
 
     const { email } = req.body;
+    const isvalidEmailFormat = verifyEmailFormat(email);
     
+    if (!isvalidEmailFormat) {
+        res.status(400).json({ error: "Invalid email format." });
+        return next();
+    }
+
     res.send({ hello: "world" });
     next();
 });
