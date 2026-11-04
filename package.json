@@ -1,8 +1,13 @@
 {
   "name": "email-verify-api-node",
   "version": "1.0.0",
-  "module": "index.ts",
+  "module": "server.ts",
   "type": "module",
+  "scripts": {
+    "dev": "nodemon -r ./server.ts",
+    "debug": "bun --inspect=5050 -r ts-node/register server.ts",
+    "build": "tsc --outDir ./dist"
+  },
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
