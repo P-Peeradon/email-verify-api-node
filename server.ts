@@ -8,9 +8,9 @@ const app = express();
 app.use(bodyParser.json());
 
 /*
-1. Accept email address
-2. Validate the format
-3. Resolve the MX record for the domain name
+-- 1. Accept email address
+-- 2. Validate the format
+-- 3. Resolve the MX record for the domain name
 4. Connect to SMTP Host and evaluate inbox.
 */
 
