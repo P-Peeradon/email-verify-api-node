@@ -2,6 +2,7 @@ import express,  { type Request, type Response, type NextFunction } from "expres
 import bodyParser from "body-parser";
 import { verifyEmailFormat } from "./service/verifyEmailFormat.service";
 import { resolveRecord } from "./service/resolveRecord.service";
+import { testInboxOnServer } from "./service/testInboxOnServer.service";
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -30,8 +31,11 @@ app.post("/", async (req: Request, res: Response, next: NextFunction) => {
 
     const emailDomain = email.split("@")[1];
     const mxRecords = await resolveRecord(emailDomain);
+    
     const sortedMxRecords = mxRecords.sort((a, b) => a.priority - b.priority);
     console.log(sortedMxRecords);
+
+    await testInboxOnServer(sortedMxRecords[0]?.exchange ?? "", email);
 
     res.send({ isvalidEmailFormat, sortedMxRecords });
     next();
