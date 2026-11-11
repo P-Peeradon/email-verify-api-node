@@ -8,9 +8,15 @@ enum SMTPStageName {
     SEND_QUIT
 };
 
+type SMTPStage = {
+    command?: string;
+    expectedResponse: number;
+    nextStage?: SMTPStageName;
+};
+
 export const testInboxOnServer = async (smtpHostName: string, emailInbox: string) => {
     return new Promise((resolve, reject) => {
-        const SMTPStages = {
+        const SMTPStages: {[key: string]: SMTPStage} = {
             [SMTPStageName.CHECK_CONNECTION_ESTABLISHED]: {
                 expectedResponse: 220,
                 nextStage: SMTPStageName.SEND_EHLO
@@ -33,38 +39,50 @@ export const testInboxOnServer = async (smtpHostName: string, emailInbox: string
             [SMTPStageName.SEND_QUIT]: {
                 command: `QUIT\r\n`,
                 expectedResponse: 221,
-                nextStage: SMTPStageName.CHECK_CONNECTION_ESTABLISHED
             }
         };
 
         const socket = net.createConnection(25, smtpHostName);
-        let currentStageName: SMTPStageName = SMTPStageName.CHECK_CONNECTION_ESTABLISHED;
+        let currentStageName: SMTPStageName = SMTPStageName.CHECK_CONNECTION_ESTABLISHED; 
 
         socket.on("data", (data: Buffer) => {
             const response = data.toString('utf-8');
-            const currentStage = SMTPStages[currentStageName];
+            let currentStage = SMTPStages[currentStageName];
 
             switch (currentStageName) {
-                case SMTPStageName.CHECK_CONNECTION_ESTABLISHED:
-                    if (!response.startsWith(currentStage.expectedResponse.toString())) {
+
+                case SMTPStageName.CHECK_CONNECTION_ESTABLISHED: {
+                    if (!response.startsWith(currentStage?.expectedResponse?.toString() ?? "000")) {
                         console.error(response);
-                        reject(new Error(`Failed to connect to ${smtpHostName}.`));
+                        return reject(new Error(`Failed to connect to ${smtpHostName}.`));
                     }
 
-                    currentStageName = currentStage.nextStage;
+                    if (!currentStage?.nextStage) {
+                        return reject(new Error(`No next stage defined for ${currentStageName}.`));
+                    }
+
+                    currentStageName = currentStage?.nextStage;
+                    currentStage = SMTPStages[currentStageName];
+
+                    if (!currentStage?.command) {
+                        return reject(new Error("Implementation error."));
+                    }
+
+                    socket.write(currentStage?.command || "", () => {
+                        console.log(`----> ${currentStage?.command}`);
+                    });
                     break;
 
-                case SMTPStageName.SEND_EHLO:
-                case SMTPStageName.SEND_MAIL_FROM:
-                case SMTPStageName.SEND_RCPT_TO:
-                    const expectedResponse = SMTPStages[currentStageName].expectedResponse;
-                    const responseCode = parseInt(data.toString('utf-8').substring(0, 3), 10);
-                    if (responseCode === expectedResponse) {
-                        currentStageName = currentStage.nextStage;
-                    } else {
+                }
+
+                case SMTPStageName.SEND_EHLO: {
+                    if (!response.startsWith(currentStage?.expectedResponse?.toString() ?? "000")) {
                         console.error(response);
-                        reject(new Error(`Failed to connect to ${smtpHostName}.`));
+                        return reject(new Error(`Failed to connect to ${smtpHostName}.`));
                     }
+                    
+                }
+
             }
         });
         
